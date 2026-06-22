@@ -15,9 +15,6 @@ const state = {
 };
 
 const elements = {
-  appHeader: document.querySelector("#appHeader"),
-  fileInput: document.querySelector("#fileInput"),
-  importButton: document.querySelector("#importButton"),
   searchInput: document.querySelector("#searchInput"),
   daySelect: document.querySelector("#daySelect"),
   dayStrip: document.querySelector("#dayStrip"),
@@ -29,9 +26,6 @@ const elements = {
   emptyState: document.querySelector("#emptyState"),
   tableShell: document.querySelector("#tableShell"),
   sourceLabel: document.querySelector("#sourceLabel"),
-  daysStat: document.querySelector("#daysStat"),
-  itemsStat: document.querySelector("#itemsStat"),
-  citiesStat: document.querySelector("#citiesStat"),
   toast: document.querySelector("#toast"),
   addressDialog: document.querySelector("#addressDialog"),
   addressForm: document.querySelector("#addressForm"),
@@ -229,12 +223,11 @@ async function loadDefaultData() {
   } catch (error) {
     elements.sourceLabel.textContent = "Importe a planilha para começar";
     elements.sourceLabel.title = error.message;
-    showToast("Abra o site por um servidor local ou importe a planilha pelo botão acima.");
+    showToast("Abra o site por um servidor local para carregar o roteiro.");
   }
 }
 
 function bootRender() {
-  updateStats();
   buildDayFilters();
   render();
   elements.sourceLabel.textContent = state.source;
@@ -248,34 +241,6 @@ function formatDate(date, options = {}) {
   if (!date) return "Sem data";
   const value = new Date(`${date}T12:00:00`);
   return new Intl.DateTimeFormat("pt-BR", options).format(value);
-}
-
-function updateStats() {
-  const cities = new Set(
-    state.items
-      .flatMap((item) => item.city.split(/\s+-\s+/))
-      .map((city) => normalize(city))
-      .filter(Boolean),
-  );
-  animateNumber(elements.daysStat, getDays().length);
-  animateNumber(elements.itemsStat, state.items.length);
-  animateNumber(elements.citiesStat, cities.size);
-}
-
-function animateNumber(element, target) {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    element.textContent = target;
-    return;
-  }
-  const start = performance.now();
-  const duration = 650;
-  const tick = (now) => {
-    const progress = Math.min((now - start) / duration, 1);
-    const eased = 1 - (1 - progress) ** 3;
-    element.textContent = Math.round(target * eased);
-    if (progress < 1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
 }
 
 function buildDayFilters() {
@@ -413,26 +378,6 @@ function clearFilters() {
   chooseDay("all");
 }
 
-async function importFile(file) {
-  if (!file) return;
-  try {
-    const parsed = parseWorkbook(readWorkbook(await file.arrayBuffer()));
-    state.items = parsed.items;
-    state.source = `${file.name} · aba ${parsed.sheetName}`;
-    state.selectedDay = "all";
-    state.search = "";
-    localStorage.setItem(STORAGE_DATA, JSON.stringify(state.items));
-    localStorage.setItem(STORAGE_SOURCE, state.source);
-    bootRender();
-    showToast(`${state.items.length} itens importados com sucesso.`);
-  } catch (error) {
-    console.error(error);
-    showToast(error.message || "Não foi possível ler essa planilha.");
-  } finally {
-    elements.fileInput.value = "";
-  }
-}
-
 function openAddressDialog(id) {
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return;
@@ -461,8 +406,6 @@ function showToast(message) {
   showToast.timer = setTimeout(() => elements.toast.classList.remove("show"), 3600);
 }
 
-elements.importButton.addEventListener("click", () => elements.fileInput.click());
-elements.fileInput.addEventListener("change", (event) => importFile(event.target.files[0]));
 elements.searchInput.addEventListener("input", (event) => {
   state.search = event.target.value;
   render();
@@ -486,12 +429,6 @@ elements.removeAddress.addEventListener("click", () => {
   saveAddress();
   elements.addressDialog.close();
 });
-window.addEventListener(
-  "scroll",
-  () => elements.appHeader.classList.toggle("scrolled", window.scrollY > 8),
-  { passive: true },
-);
-
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }

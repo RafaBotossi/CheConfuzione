@@ -1,4 +1,4 @@
-const CACHE = "che-confuzione-v2";
+const CACHE = "che-confuzione-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,7 +6,7 @@ const ASSETS = [
   "./app.js",
   "./manifest.webmanifest",
   "./Roteiro Principal.xlsx",
-  "./assets/che-confuzione-logo-v2.png",
+  "./assets/logo.png",
   "./assets/xlsx.full.min.js",
 ];
 
