@@ -1,12 +1,12 @@
-const CACHE = "che-confuzione-v3";
+const CACHE = "che-confuzione-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
-  "./Roteiro Principal.xlsx",
   "./assets/logo.png",
+  "./assets/logo-transparent.png",
   "./assets/xlsx.full.min.js",
 ];
 

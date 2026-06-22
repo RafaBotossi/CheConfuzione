@@ -1,20 +1,17 @@
 /* global XLSX */
 
-const DEFAULT_FILE = "Roteiro Principal.xlsx";
-const STORAGE_DATA = "che-confuzione:imported-data";
-const STORAGE_SOURCE = "che-confuzione:source-name";
-const STORAGE_ADDRESSES = "che-confuzione:address-overrides";
-
 const state = {
   items: [],
   selectedDay: "all",
   search: "",
-  source: DEFAULT_FILE,
+  source: "",
   editingId: null,
-  addresses: readJson(STORAGE_ADDRESSES, {}),
+  addresses: {},
 };
 
 const elements = {
+  fileInput: document.querySelector("#fileInput"),
+  importButton: document.querySelector("#importButton"),
   searchInput: document.querySelector("#searchInput"),
   daySelect: document.querySelector("#daySelect"),
   dayStrip: document.querySelector("#dayStrip"),
@@ -44,14 +41,6 @@ const columnAliases = {
   address: ["endereco", "local", "address"],
   value: ["valor", "preco", "custo", "total"],
 };
-
-function readJson(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function normalize(value = "") {
   return String(value)
@@ -204,27 +193,13 @@ function readWorkbook(buffer) {
   return XLSX.read(buffer, { type: "array", cellDates: false });
 }
 
-async function loadDefaultData() {
-  const saved = readJson(STORAGE_DATA, null);
-  if (Array.isArray(saved) && saved.length) {
-    state.items = saved;
-    state.source = localStorage.getItem(STORAGE_SOURCE) || "Planilha importada";
-    bootRender();
-    return;
-  }
-
-  try {
-    const response = await fetch(encodeURI(DEFAULT_FILE));
-    if (!response.ok) throw new Error("Arquivo padrão não encontrado.");
-    const parsed = parseWorkbook(readWorkbook(await response.arrayBuffer()));
-    state.items = parsed.items;
-    state.source = `${DEFAULT_FILE} · aba ${parsed.sheetName}`;
-    bootRender();
-  } catch (error) {
-    elements.sourceLabel.textContent = "Importe a planilha para começar";
-    elements.sourceLabel.title = error.message;
-    showToast("Abra o site por um servidor local para carregar o roteiro.");
-  }
+function initializeApp() {
+  buildDayFilters();
+  elements.sourceLabel.textContent = "Importe a planilha para começar";
+  elements.resultsCount.textContent = "Nenhuma planilha carregada";
+  elements.tableShell.hidden = true;
+  elements.mobileList.hidden = true;
+  elements.emptyState.hidden = true;
 }
 
 function bootRender() {
@@ -245,10 +220,11 @@ function formatDate(date, options = {}) {
 
 function buildDayFilters() {
   const days = getDays();
+  elements.dayStrip.style.setProperty("--day-count", days.length + 1);
   elements.daySelect.innerHTML = '<option value="all">Todos os dias</option>';
   elements.dayStrip.innerHTML = `
     <button class="day-chip active" data-day="all" type="button">
-      <span>Roteiro</span><strong>Todos</strong>
+      <span>Todos</span><strong>dias</strong>
     </button>`;
 
   days.forEach((day) => {
@@ -378,6 +354,25 @@ function clearFilters() {
   chooseDay("all");
 }
 
+async function importFile(file) {
+  if (!file) return;
+  try {
+    const parsed = parseWorkbook(readWorkbook(await file.arrayBuffer()));
+    state.items = parsed.items;
+    state.source = `${file.name} · aba ${parsed.sheetName}`;
+    state.selectedDay = "all";
+    state.search = "";
+    state.addresses = {};
+    bootRender();
+    showToast(`${state.items.length} itens importados com sucesso.`);
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Não foi possível ler essa planilha.");
+  } finally {
+    elements.fileInput.value = "";
+  }
+}
+
 function openAddressDialog(id) {
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return;
@@ -394,9 +389,8 @@ function saveAddress() {
   const value = elements.addressInput.value.trim();
   if (value) state.addresses[state.editingId] = value;
   else delete state.addresses[state.editingId];
-  localStorage.setItem(STORAGE_ADDRESSES, JSON.stringify(state.addresses));
   render();
-  showToast(value ? "Endereço salvo neste aparelho." : "Endereço removido.");
+  showToast(value ? "Endereço salvo durante esta sessão." : "Endereço removido.");
 }
 
 function showToast(message) {
@@ -406,6 +400,8 @@ function showToast(message) {
   showToast.timer = setTimeout(() => elements.toast.classList.remove("show"), 3600);
 }
 
+elements.importButton.addEventListener("click", () => elements.fileInput.click());
+elements.fileInput.addEventListener("change", (event) => importFile(event.target.files[0]));
 elements.searchInput.addEventListener("input", (event) => {
   state.search = event.target.value;
   render();
@@ -433,4 +429,4 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
 
-loadDefaultData();
+initializeApp();

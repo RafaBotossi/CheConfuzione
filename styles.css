@@ -554,12 +554,7 @@ footer img {
 .planner-logo {
   width: min(620px, 92%);
   margin: 0 auto clamp(48px, 7vw, 82px);
-  overflow: hidden;
-  border-radius: 30px;
-  background: #fff;
-  box-shadow:
-    0 28px 75px rgba(23, 59, 50, 0.18),
-    0 0 0 1px rgba(214, 160, 62, 0.12);
+  filter: drop-shadow(0 24px 30px rgba(23, 59, 50, 0.18));
 }
 
 .planner-logo img {
@@ -601,10 +596,29 @@ footer img {
 
 .planner-heading p {
   max-width: 340px;
-  margin: 0 0 6px;
+  margin: 0;
   color: var(--ink-soft);
   font-size: 0.82rem;
   text-align: right;
+}
+
+.planner-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.import-button {
+  flex: 0 0 auto;
+  color: white;
+  background: var(--forest);
+  border-color: rgba(214, 160, 62, 0.45);
+  box-shadow: 0 9px 24px rgba(23, 63, 54, 0.18);
+}
+
+.import-button:hover {
+  background: var(--forest-2);
 }
 
 .toolbar {
@@ -677,28 +691,22 @@ footer img {
 }
 
 .day-strip {
-  display: flex;
-  gap: 9px;
+  display: grid;
+  grid-template-columns: repeat(var(--day-count, 1), minmax(0, 1fr));
+  gap: 4px;
   margin: 18px 0 7px;
-  padding: 3px 2px 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.day-strip::-webkit-scrollbar {
-  display: none;
+  padding: 3px 0 10px;
 }
 
 .day-chip {
-  flex: 0 0 auto;
-  min-width: 78px;
-  padding: 11px 14px;
+  min-width: 0;
+  padding: 7px 2px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 10px;
   color: var(--ink-soft);
   background: rgba(255, 255, 255, 0.56);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   transition: 0.2s ease;
 }
 
@@ -708,17 +716,22 @@ footer img {
 }
 
 .day-chip span {
-  font-size: 0.65rem;
+  overflow: hidden;
+  font-size: 0.5rem;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.02em;
+  text-overflow: clip;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .day-chip strong {
-  margin-top: 2px;
+  margin-top: 1px;
   color: var(--ink);
   font-family: "Manrope", sans-serif;
-  font-size: 1.07rem;
+  font-size: 0.68rem;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
 }
 
 .day-chip:hover,
@@ -1254,6 +1267,12 @@ dialog input:focus {
   .planner-heading p {
     text-align: left;
   }
+
+  .planner-heading-actions {
+    width: 100%;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1275,7 +1294,6 @@ dialog input:focus {
   .planner-logo {
     width: 100%;
     margin-bottom: 42px;
-    border-radius: 20px;
   }
 
   .brand {
@@ -1366,7 +1384,7 @@ dialog input:focus {
   }
 
   .day-strip {
-    margin-right: -14px;
+    grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
   }
 
   .toast {
