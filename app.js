@@ -194,6 +194,12 @@ function readWorkbook(buffer) {
 }
 
 function initializeApp() {
+  [
+    "che-confuzione:imported-data",
+    "che-confuzione:source-name",
+    "che-confuzione:address-overrides",
+  ].forEach((key) => localStorage.removeItem(key));
+
   buildDayFilters();
   elements.sourceLabel.textContent = "Importe a planilha para começar";
   elements.resultsCount.textContent = "Nenhuma planilha carregada";
@@ -426,7 +432,12 @@ elements.removeAddress.addEventListener("click", () => {
   elements.addressDialog.close();
 });
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("./sw.js", { updateViaCache: "none" })
+      .then((registration) => registration.update())
+      .catch(() => {});
+  });
 }
 
 initializeApp();
