@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#173f36" />
+    <meta
+      name="description"
+      content="Che Confuzione — todo o roteiro da viagem, bonito e fácil de consultar."
+    />
+    <title>Che Confuzione · Roteiro de viagem</title>
+    <link rel="icon" href="assets/che-confuzione-logo.png" />
+    <link rel="apple-touch-icon" href="assets/che-confuzione-logo.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="app-header" id="appHeader">
+      <div class="header-inner">
+        <a class="brand" href="#" aria-label="Che Confuzione — início">
+          <span class="brand-mark">
+            <img src="assets/che-confuzione-logo.png" alt="" />
+          </span>
+          <span class="brand-copy">
+            <strong>Che Confuzione</strong>
+            <small>La nostra avventura</small>
+          </span>
+        </a>
+
+        <div class="header-actions">
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" hidden />
+          <button class="button button-secondary" id="importButton" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
+            </svg>
+            <span>Importar planilha</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow reveal">
+          <span class="live-dot"></span>
+          Roteiro Europa 2026
+        </div>
+        <div class="hero-grid">
+          <div class="hero-copy reveal">
+            <h1>Uma viagem inteira.<br /><em>Zero confuzione.</em></h1>
+            <p>
+              Horários, lugares, reservas e caminhos reunidos em uma linha do tempo
+              feita para consultar até andando pela rua.
+            </p>
+          </div>
+
+          <div class="hero-stats reveal" aria-label="Resumo da viagem">
+            <div class="stat">
+              <span id="daysStat">—</span>
+              <small>dias</small>
+            </div>
+            <div class="stat">
+              <span id="itemsStat">—</span>
+              <small>momentos</small>
+            </div>
+            <div class="stat stat-wide">
+              <span id="citiesStat">—</span>
+              <small>destinos</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="planner" aria-labelledby="plannerTitle">
+        <div class="planner-heading reveal">
+          <div>
+            <span class="section-kicker">Il viaggio</span>
+            <h2 id="plannerTitle">Nosso itinerário</h2>
+          </div>
+          <p id="sourceLabel">Carregando roteiro principal…</p>
+        </div>
+
+        <div class="toolbar reveal">
+          <label class="search-box" for="searchInput">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-4-4"></path>
+            </svg>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Buscar cidade, passeio, reserva…"
+              autocomplete="off"
+            />
+          </label>
+
+          <label class="day-select-wrap" for="daySelect">
+            <span>Ver dia</span>
+            <select id="daySelect">
+              <option value="all">Todos os dias</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="day-strip reveal" id="dayStrip" aria-label="Filtrar por dia"></div>
+
+        <div class="results-meta">
+          <p id="resultsCount" aria-live="polite"></p>
+          <button id="clearFilters" class="text-button" type="button" hidden>Limpar filtros</button>
+        </div>
+
+        <div class="table-shell reveal" id="tableShell">
+          <table>
+            <thead>
+              <tr>
+                <th class="when-column">Data & hora</th>
+                <th>Cidade</th>
+                <th>Tipo</th>
+                <th>O que fazer</th>
+                <th>Observação</th>
+                <th>Endereço & mapa</th>
+              </tr>
+            </thead>
+            <tbody id="itineraryTable"></tbody>
+          </table>
+        </div>
+
+        <div class="mobile-list" id="mobileList"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <span>✦</span>
+          <h3>Nada por aqui</h3>
+          <p>Tente outro dia ou limpe a busca para reencontrar o caminho.</p>
+          <button class="button button-primary" id="emptyClear" type="button">Ver roteiro completo</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <img src="assets/che-confuzione-logo.png" alt="" />
+      <p>Che Confuzione <span>·</span> Itália, Bélgica e histórias para contar.</p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="addressDialog">
+      <form method="dialog" id="addressForm">
+        <button class="dialog-close" value="cancel" aria-label="Fechar" type="submit">×</button>
+        <span class="dialog-icon">⌖</span>
+        <h2>Onde fica?</h2>
+        <p id="addressItemName"></p>
+        <label for="addressInput">Endereço para o Google Maps</label>
+        <input id="addressInput" type="text" autocomplete="street-address" />
+        <div class="dialog-actions">
+          <button class="button button-ghost" id="removeAddress" type="button">Remover</button>
+          <button class="button button-primary" value="save" type="submit">Salvar endereço</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="assets/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
